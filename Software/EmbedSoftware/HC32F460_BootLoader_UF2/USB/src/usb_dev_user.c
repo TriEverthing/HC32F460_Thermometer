@@ -80,9 +80,7 @@ usb_dev_user_func user_cb = {
  */
 void usb_dev_user_init(void)
 {
-#if (LL_PRINT_ENABLE == DDL_ON)
-    DDL_Printf("usb_dev_user_init\r\n");
-#endif
+
 }
 
 /**
@@ -92,9 +90,7 @@ void usb_dev_user_init(void)
  */
 void usb_dev_user_rst(void)
 {
-#if (LL_PRINT_ENABLE == DDL_ON)
-    DDL_Printf(">>USB Device has reset.\r\n");
-#endif
+
 }
 
 /**
@@ -104,9 +100,7 @@ void usb_dev_user_rst(void)
  */
 void usb_dev_user_devcfg(void)
 {
-#if (LL_PRINT_ENABLE == DDL_ON)
-    DDL_Printf(">>MSC interface starts.\r\n");
-#endif
+
 }
 
 /**
@@ -116,9 +110,7 @@ void usb_dev_user_devcfg(void)
  */
 void usb_dev_user_conn(void)
 {
-#if (LL_PRINT_ENABLE == DDL_ON)
-    DDL_Printf(">>USB device connects.\r\n");
-#endif
+
 }
 
 /**
@@ -128,9 +120,7 @@ void usb_dev_user_conn(void)
  */
 void usb_dev_user_disconn(void)
 {
-#if (LL_PRINT_ENABLE == DDL_ON)
-    DDL_Printf(">>USB device disconnected.\r\n");
-#endif
+
 }
 
 /**
@@ -140,9 +130,7 @@ void usb_dev_user_disconn(void)
  */
 void usb_dev_user_devsusp(void)
 {
-#if (LL_PRINT_ENABLE == DDL_ON)
-    DDL_Printf(">>USB device in suspend status.\r\n");
-#endif
+
 }
 
 /**
@@ -152,9 +140,7 @@ void usb_dev_user_devsusp(void)
  */
 void usb_dev_user_devresume(void)
 {
-#if (LL_PRINT_ENABLE == DDL_ON)
-    DDL_Printf(">>USB device resumes.\r\n");
-#endif
+
 }
 
 /**

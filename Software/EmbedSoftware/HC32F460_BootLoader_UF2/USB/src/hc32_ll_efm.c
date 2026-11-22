@@ -39,7 +39,6 @@
  * Include files
  ******************************************************************************/
 #include "hc32_ll_efm.h"
-#include "hc32_ll_utility.h"
 
 /**
  * @addtogroup LL_Driver

@@ -41,7 +41,7 @@ extern "C"
 #include "hc32_ll_def.h"
 
 #include "hc32f4xx.h"
-#include "hc32f4xx_conf.h"
+
 /**
  * @addtogroup LL_Driver
  * @{

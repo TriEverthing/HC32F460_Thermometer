@@ -38,7 +38,7 @@ extern "C"
 #include "hc32_ll_def.h"
 
 #include "hc32f4xx.h"
-#include "hc32f4xx_conf.h"
+#include "hc32_ll_usb.h"
 
 #include "usb_app_conf.h"
 

@@ -39,6 +39,23 @@ extern "C"
 #error "Please select first the target HC32xxxx device used in your application (in hc32xxxx.h file)"
 #endif
 
+
+#define LL_USB_ENABLE DDL_ON
+#define LL_EFM_ENABLE DDL_ON
+
+/* You can add your own assert functions by implement the function DDL_AssertHandler
+   definition follow the function DDL_AssertHandler declaration */
+#ifdef __DEBUG
+#define DDL_ASSERT(x)                                                          \
+do {                                                                           \
+    ((x) ? (void)0 : DDL_AssertHandler(__FILE__, __LINE__));                   \
+} while (0)
+/* Exported function */
+void DDL_AssertHandler(const char *file, int line);
+#else
+#define DDL_ASSERT(x)                   ((void)0U)
+#endif /* __DEBUG */
+
 /*******************************************************************************
  * Global type definitions ('typedef')
  ******************************************************************************/

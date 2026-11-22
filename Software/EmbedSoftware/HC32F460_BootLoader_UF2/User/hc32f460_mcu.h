@@ -16,7 +16,8 @@ extern "C" {
 #include "stdarg.h"
 #include "stdio.h"
 #include "string.h"
-#include "hc32_ll.h"
+#include "hc32_ll_def.h"
+#include "hc32_ll_efm.h"
 //#include "config_param.h"
 /* private includes -------------------------------------------------------------*/
 /* add user code begin private includes */
@@ -24,9 +25,7 @@ extern "C" {
 /* add user code end private includes */
 
 /* exported types -------------------------------------------------------------*/
-extern void (*Mcu_printf)( const uint8_t * format , ... ) ;
-extern volatile uint32_t ticks_count_us ;
-extern volatile uint64_t ticks_count_overflow ;
+
 /* exported constants --------------------------------------------------------*/
 /* add user code begin exported constants */
 
@@ -203,9 +202,60 @@ extern volatile uint64_t ticks_count_overflow ;
 #define BSP_XTAL0_PIN_POS             (0)
 #define BSP_XTAL1_PIN_POS             (1)
 
+/**
+ * @brief Switch clock stable time
+ * @note Approx. 30us
+ */
+#define CLK_SYSCLK_SW_STB               (30U)
+
+/**
+ * @defgroup SRAM_Reg_Protect_Key SRAM Register Protect Key
+ * @{
+ */
+#define SRAM_REG_LOCK_KEY               (0x76U)
+#define SRAM_REG_UNLOCK_KEY             (0x77U)
+/**
+ * @defgroup PWC_REG_Write_Unlock_Code PWC register unlock code.
+ * @brief Lock/unlock Code for each module
+@verbatim
+ *        PWC_UNLOCK_CODE0:
+ *          Below registers are locked in CLK module.
+ *              XTALCFGR, XTALSTBCR, XTALCR, XTALSTDCR, XTALSTDSR, HRCTRM, HRCCR,
+ *              MRCTRM, MRCCR, PLLCFGR, PLLCR, UPLLCFGR, UPLLCR, OSCSTBSR, CKSWR,
+ *              SCFGR, USBCKCFGR, TPIUCKCFGR, MCO1CFGR, MCO2CFGR, XTAL32CR,
+ *              XTALC32CFGR, XTAL32NFR, LRCCR, LRCTRM.
+ *        PWC_UNLOCK_CODE1:
+ *          Below registers are locked in PWC module.
+ *              PWRC0, PWRC1, PWRC2, PWRC3, PDWKE0, PDWKE1, PDWKE2, PDWKES, PDWKF0,
+ *              PDWKF1, PWCMR, PWR_STPMCR, RAMPC0, RAMOPM.
+ *          Below registers are locked in CLK module.
+ *              PERICKSEL, I2SCKSEL,
+ *          Below register is locked in RMU module.
+ *              RSTF0
+ *        PWC_UNLOCK_CODE2:
+ *          Below registers are locked in PWC module.
+ *              PVDCR0, PVDCR1, PVDFCR, PVDLCR, PVDICR, PVDDSR
+@endverbatim
+ * @{
+ */
+#define PWC_WRITE_ENABLE                (0xA500U)
+#define PWC_UNLOCK_CODE0                (0xA501U)
+#define PWC_UNLOCK_CODE1                (0xA502U)
+#define PWC_UNLOCK_CODE2                (0xA508U)
+
+/**
+ * @brief PWC FCG0 Unlock/Lock code
+ */
+#define PWC_FCG0_REG_UNLOCK_KEY         (0xA5A50001UL)
+#define PWC_FCG0_REG_LOCK_KEY           (0xA5A50000UL)
+
+#define INTSEL_REG                      (uint32_t)(&CM_INTC->SEL0)
+#define INTSEL_RST_VALUE                (0x1FFUL)
 
 /* add user code begin exported functions */
 void hc32_bsp_clocks_init(void);
+void DelayMS(uint32_t u32Count);
+void DelayUS(uint32_t u32Count);
 
 
 /* add user code end exported functions */

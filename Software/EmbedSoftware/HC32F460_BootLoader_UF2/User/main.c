@@ -52,8 +52,8 @@ typedef  void (*pFunction)(void);
  ******************************************************************************/
 /* KEY0 Port/Pin definition */
 #define BOOTUF2_PORT         (GPIO_PORT_B)
-#define BOOTUF2_PIN          (GPIO_PIN_07)
-#define BOOTUF2_PIN_POS      (7)
+#define BOOTUF2_PIN          (GPIO_PIN_14)
+#define BOOTUF2_PIN_POS      (14)
 /*******************************************************************************
  * Global variable definitions (declared in header file with 'extern')
  ******************************************************************************/
@@ -173,18 +173,28 @@ void Jump_To_Application(uint32_t app_addr)
 
     if( uf2_bootloader_flag )
     {
-        /* Register write enable for some required peripherals. */
-        LL_PERIPH_WE(LL_PERIPH_PWC_CLK_RMU | LL_PERIPH_EFM);
+        /* EFM registers write unprotected */
+        WRITE_REG32(CM_EFM->FAPRT, EFM_REG_UNLOCK_KEY1);
+        WRITE_REG32(CM_EFM->FAPRT, EFM_REG_UNLOCK_KEY2);
+        /* PWC, CLK, RMU registers write unprotected */
+        SET_REG16_BIT(CM_PWC->FPRC, PWC_UNLOCK_CODE0 | PWC_UNLOCK_CODE1);
+
         /* Disable the USB peripheral clock. */
         WRITE_REG32(CM_PWC->FCG0PC, PWC_FCG0_REG_UNLOCK_KEY);
         SET_REG32_BIT(CM_PWC->FCG1, FCG1_PERIPH_USBFS);
         WRITE_REG32(CM_PWC->FCG0PC, PWC_FCG0_REG_LOCK_KEY);
         /* De-Initializes the device stack and load the class driver */
         usb_dev_deinit(&usb_dev);
+
         /* Disable mPLL */
-        CLK_PLLCmd(DISABLE);
-        /* Register write protected for some required peripherals. */
-        LL_PERIPH_WP(LL_PERIPH_PWC_CLK_RMU | LL_PERIPH_EFM);
+        if (0x05U != READ_REG8_BIT(CM_CMU->CKSWR, CMU_CKSWR_CKSW)) {
+            WRITE_REG8(CM_CMU->PLLCR, 1);
+        }
+
+        /* EFM registers write protected */
+        WRITE_REG32(CM_EFM->FAPRT, EFM_REG_LOCK_KEY);
+        /* PWC, CLK, RMU registers write protected */
+        CM_PWC->FPRC = (PWC_WRITE_ENABLE | (uint16_t)((uint16_t)(~( PWC_UNLOCK_CODE0 | PWC_UNLOCK_CODE1)) & (CM_PWC->FPRC)));
 
         /* Clear All NVIC */
         for (uint32_t i = 0; i < 8U; i++) {
@@ -236,12 +246,12 @@ uint8_t Boot_Btn_Is_Press(void)
         boot_btn_is_initialized = 1;
     } 
 
-    if((READ_REG(PIDR_REG(BOOTUF2_PORT)) & (BOOTUF2_PIN)) == 0 ) //UF2_BOOT Press Down
+    if((READ_REG(PIDR_REG(BOOTUF2_PORT)) & (BOOTUF2_PIN)) != 0 ) //UF2_BOOT Press Down
     {
         //soft_delay_ms(10);
         /* Key filter */
-        DDL_DelayMS(20);
-        if((READ_REG(PIDR_REG(BOOTUF2_PORT)) & (BOOTUF2_PIN)) == 0 )
+        DelayMS(20);
+        if((READ_REG(PIDR_REG(BOOTUF2_PORT)) & (BOOTUF2_PIN)) != 0 )
         {
             return 1;
         }

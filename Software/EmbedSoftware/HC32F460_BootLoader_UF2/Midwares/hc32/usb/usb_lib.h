@@ -32,7 +32,8 @@ extern "C"
  * Include files
  ******************************************************************************/
 #include "hc32_ll_usb.h"
-#include "hc32_ll.h"
+#include "hc32_ll_def.h"
+#include "hc32f4xx.h"
 
 /**
  * @addtogroup LL_USB_LIB LL USB Lib

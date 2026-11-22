@@ -7,8 +7,8 @@ srcDirs:
   - USB
   - User
   - bootuf2
-  - Drivers
   - Midwares/hc32/usb
+  - cmsis
 virtualFolder:
   name: <virtual_root>
   files: []
@@ -27,9 +27,8 @@ targets:
         - USB/inc
         - User
         - bootuf2
-        - Drivers/hc32_ll_driver/inc
-        - Drivers/cmsis/Include
-        - Drivers/cmsis/Device/HDSC/hc32f4xx/Include
+        - cmsis/Include
+        - cmsis/Device/HDSC/hc32f4xx/Include
         - Midwares/hc32/usb
         - Midwares/hc32/usb/usb_device_lib/device_core
         - Midwares/hc32/usb/usb_device_lib/device_class/msc
@@ -104,7 +103,6 @@ targets:
           global:
             $float-abi-type: hard
             arm-thumb-mode: thumb
-            not-use-syscalls: true
             output-debug-info: disable
             use-newlib-nano: true
           linker:

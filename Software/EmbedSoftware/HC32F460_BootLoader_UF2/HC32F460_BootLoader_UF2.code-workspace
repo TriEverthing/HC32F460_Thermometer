@@ -2,12 +2,6 @@
     "folders": [
         {
             "path": "."
-        },
-        {
-            "path": "../HC32F460_DDL_Rev3.3.0/drivers"
-        },
-        {
-            "path": "../HC32F460_DDL_Rev3.3.0/midwares/hc32/usb"
         }
     ],
     "settings": {

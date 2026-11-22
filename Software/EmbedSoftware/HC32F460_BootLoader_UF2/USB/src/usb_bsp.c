@@ -25,7 +25,7 @@
  * Include files
  ******************************************************************************/
 #include "usb_bsp.h"
-#include "hc32_ll.h"
+#include "hc32f460_mcu.h"
 #include "usb_dev_int.h"
 
 #include "bootuf2.h"
@@ -47,9 +47,6 @@
 /*******************************************************************************
  * Local pre-processor symbols/macros ('#define')
  ******************************************************************************/
-/* unlock/lock peripheral */
-#define EXAMPLE_PERIPH_WE               ( LL_PERIPH_EFM | LL_PERIPH_PWC_CLK_RMU )
-#define EXAMPLE_PERIPH_WP               ( LL_PERIPH_EFM | LL_PERIPH_PWC_CLK_RMU )
 
 
 /*******************************************************************************
@@ -84,6 +81,7 @@ void IRQ030_Handler(void)
     usb_isr_handler(&usb_dev);
 }
 
+
 /**
  * @brief  handle the USB interrupt
  * @param  None
@@ -93,8 +91,9 @@ int bootuf2_flash_write(uint32_t address , const uint8_t *data, size_t size)
 {
     uint32_t u32TimesOut;
 
-    /* Peripheral registers write unprotected */
-    LL_PERIPH_WE(LL_PERIPH_EFM );
+    /* EFM registers write unprotected */
+    WRITE_REG32(CM_EFM->FAPRT, EFM_REG_UNLOCK_KEY1);
+    WRITE_REG32(CM_EFM->FAPRT, EFM_REG_UNLOCK_KEY2);
 
     //address = address + FLASH_BASE ;
     if( address >= UF2_APP_CODE_ADDRESS && address <= ( UF2_BOOT_FLASH_SIZE + UF2_BOOT_EFM_BASE )) {
@@ -122,8 +121,6 @@ int bootuf2_flash_write(uint32_t address , const uint8_t *data, size_t size)
         /* EFM_FWMC write Disable */
         EFM_FWMC_Cmd(DISABLE);  
 
-        /* Peripheral registers write protected */
-        LL_PERIPH_WP(LL_PERIPH_EFM );
     } else if( address >= UF2_BOOT_QSPIROM_BASE ) {
         /* QSPI ROM Area */
         
@@ -142,9 +139,10 @@ int bootuf2_flash_write(uint32_t address , const uint8_t *data, size_t size)
  * @param  None
  * @retval None
  */
-#if 0
+
 static void UsbClockInit(void)
 {
+#if 0
     stc_clock_pllx_init_t stcUpllInit;
 
     (void)CLK_PLLxStructInit(&stcUpllInit);
@@ -159,10 +157,13 @@ static void UsbClockInit(void)
 
     /* Set USB clock source */
     CLK_SetUSBClockSrc(CLK_USBCLK_PLLXP);
-}
 #else
-#define UsbClockInit()    CLK_SetUSBClockSrc(CLK_USBCLK_PLLR)
+    /* Set USB clock source, MPLL_R */
+    WRITE_REG8(CM_CMU->USBCKCFGR, (0x0AU << CMU_USBCKCFGR_USBCKS_POS));
+    DelayUS(CLK_SYSCLK_SW_STB);
 #endif
+}
+
 
 /**
  * @brief  initialize configurations for the BSP
@@ -177,23 +178,15 @@ void usb_bsp_init(usb_core_instance *pdev, stc_usb_port_identify *pstcPortIdenti
 
     bootuf2_init();
 
-    /* Unlock peripherals or registers */
-    LL_PERIPH_WE(EXAMPLE_PERIPH_WE);
+    /* GPIO registers write unprotected */
+    WRITE_REG16(CM_GPIO->PWPR, GPIO_REG_UNLOCK_KEY);
+    /* FCG registers write unprotected */
+    WRITE_REG32(CM_PWC->FCG0PC, PWC_FCG0_REG_UNLOCK_KEY);
 
     //BSP_CLK_Init();
     //BSP_LED_Init();
-#if (LL_PRINT_ENABLE == DDL_ON)
-    DDL_PrintfInit(BSP_PRINTF_DEVICE, BSP_PRINTF_BAUDRATE, BSP_PRINTF_Preinit);
-#endif
     /* USB clock source configure */
     UsbClockInit();
-
-#if (LL_PRINT_ENABLE == DDL_ON)
-    DDL_Printf("USB start !!\r\n");
-#endif
-
-    /* Register write enable for some required peripherals. */
-    WRITE_REG16(CM_GPIO->PWPR, GPIO_REG_UNLOCK_KEY);
 
     PCRx = &PCR_REG(USB_DP_PORT, USB_DP_PIN_POS);
     WRITE_REG16(*PCRx, GPIO_PCR_DDIS); 
@@ -204,16 +197,15 @@ void usb_bsp_init(usb_core_instance *pdev, stc_usb_port_identify *pstcPortIdenti
     PFSRx = &PFSR_REG(USB_VBUS_PORT, USB_VBUS_PIN_POS);/* VBUS */
     MODIFY_REG16(*PFSRx, GPIO_PFSR_FSEL, GPIO_FUNC_10);
 
-    /* Register write protected for some required peripherals. */
-    WRITE_REG16(CM_GPIO->PWPR, GPIO_REG_LOCK_KEY);
-
-    WRITE_REG32(CM_PWC->FCG0PC, PWC_FCG0_REG_UNLOCK_KEY);
     CLR_REG32_BIT(CM_PWC->FCG1, FCG1_PERIPH_USBFS);
+
+    /* GPIO registers write protected */
+    WRITE_REG16(CM_GPIO->PWPR, GPIO_REG_LOCK_KEY);
+    /* FCG registers write protected */
     WRITE_REG32(CM_PWC->FCG0PC, PWC_FCG0_REG_LOCK_KEY);
 }
 
-#define INTSEL_REG              (uint32_t)(&CM_INTC->SEL0)
-#define INTSEL_RST_VALUE        (0x1FFUL)
+
 /**
  * @brief  configure the NVIC of USB
  * @param  [in] pdev                    device instance
